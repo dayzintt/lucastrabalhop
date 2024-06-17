@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funções JavaScript</title>
+    <style>
+        .memory-board {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-gap: 10px;
+            margin-top: 20px;
+        }
+        .memory-button {
+            width: 100px;
+            height: 100px;
+            font-size: 24px;
+            background-color: lightgray;
+            border: 1px solid #000;
+        }
+        #darkModeButton {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Funções JavaScript</h1>
+
+    <h2>Verificar Palíndromo</h2>
+    <input type="text" id="palindromeInput" placeholder="Digite uma palavra">
+    <button onclick="checkPalindrome()">Verificar</button>
+    <p id="palindromeResult"></p>
+
+    <h2>Jogo da Memória</h2>
+    <div class="memory-board">
+        <button class="memory-button" onclick="flipCard(this)">A</button>
+        <button class="memory-button" onclick="flipCard(this)">B</button>
+        <button class="memory-button" onclick="flipCard(this)">A</button>
+        <button class="memory-button" onclick="flipCard(this)">B</button>
+        <button class="memory-button" onclick="flipCard(this)">C</button>
+        <button class="memory-button" onclick="flipCard(this)">D</button>
+        <button class="memory-button" onclick="flipCard(this)">C</button>
+        <button class="memory-button" onclick="flipCard(this)">D</button>
+    </div>
+
+    <h2>Combinações de Letras</h2>
+    <input type="text" id="letter1" maxlength="1" placeholder="Letra 1">
+    <input type="text" id="letter2" maxlength="1" placeholder="Letra 2">
+    <input type="text" id="letter3" maxlength="1" placeholder="Letra 3">
+    <button onclick="generateLetterCombinations()">Gerar Combinações</button>
+    <p id="combinationsResult"></p>
+
+    <button id="darkModeButton" onclick="toggleDarkMode()">Light Mode</button>
+
+    <script>
+        // Função para verificar palíndromo
+        function isPalindrome(word) {
+            const cleanedWord = word.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const reversedWord = cleanedWord.split('').reverse().join('');
+            return cleanedWord === reversedWord;
+        }
+
+        function checkPalindrome() {
+            const word = document.getElementById('palindromeInput').value;
+            const result = isPalindrome(word) ? "É um palíndromo" : "Não é um palíndromo";
+            document.getElementById('palindromeResult').innerText = result;
+        }
+
+        // Variáveis para o jogo da memória
+        let hasFlippedCard = false;
+        let firstCard, secondCard;
+        let lockBoard = false;
+
+        function flipCard(button) {
+            if (lockBoard) return;
+            if (button === firstCard) return;
+
+            button.innerText = button.dataset.originalText;
+            button.style.backgroundColor = 'white';
+
+            if (!hasFlippedCard) {
+                // Primeiro clique
+                hasFlippedCard = true;
+                firstCard = button;
+                return;
+            }
+
+            // Segundo clique
+            secondCard = button;
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            let isMatch = firstCard.innerText === secondCard.innerText;
+            isMatch ? disableCards() : unflipCards();
+        }
+
+        function disableCards() {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+
+            resetBoard();
+        }
+
+        function unflipCards() {
+            lockBoard = true;
+
+            setTimeout(() => {
+                firstCard.innerText = '';
+                secondCard.innerText = '';
+                firstCard.style.backgroundColor = 'lightgray';
+                secondCard.style.backgroundColor = 'lightgray';
+
+                resetBoard();
+            }, 1500);
+        }
+
+        function resetBoard() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        document.querySelectorAll('.memory-button').forEach(button => {
+            button.dataset.originalText = button.innerText;
+            button.innerText = '';
+            button.style.backgroundColor = 'lightgray';
+        });
+
+        // Função para gerar combinações de letras
+        function generateCombinations(a, b, c) {
+            let letters = [a, b, c];
+            let combinations = new Set();
+
+            function permute(arr, m = []) {
+                if (arr.length === 0) {
+                    combinations.add(m.join(''));
+                } else {
+                    for (let i = 0; i < arr.length; i++) {
+                        let curr = arr.slice();
+                        let next = curr.splice(i, 1);
+                        permute(curr.slice(), m.concat(next));
+                    }
+                }
+            }
+
+            permute(letters);
+            return Array.from(combinations);
+        }
+
+        function generateLetterCombinations() {
+            const letter1 = document.getElementById('letter1').value;
+            const letter2 = document.getElementById('letter2').value;
+            const letter3 = document.getElementById('letter3').value;
+            const combinations = generateCombinations(letter1, letter2, letter3);
+            document.getElementById('combinationsResult').innerText = combinations.join(', ');
+        }
+
+        // Função para alternar o modo escuro
+        function toggleDarkMode() {
+            const body = document.body;
+            const button = document.getElementById('darkModeButton');
+
+            if (body.style.backgroundColor === 'black') {
+                body.style.backgroundColor = 'white';
+                body.style.color = 'black';
+                button.innerText = 'Light Mode';
+            } else {
+                body.style.backgroundColor = 'black';
+                body.style.color = 'white';
+                button.innerText = 'Dark Mode';
+            }
+        }
+    </script>
+</body>
+</html>
